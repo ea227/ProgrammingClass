@@ -1,0 +1,171 @@
+#Exam 1
+
+#some set up:
+setwd("~/Desktop/Fall24/Programming for Biologists/Exam1")
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+library(readr)
+
+
+#Part 1
+#read in the data:
+Acacia <- read.csv("Acaciadata.csv")
+glimpse(Acacia) #one column, oh no 
+
+#try this: https://www.geeksforgeeks.org/how-to-split-column-into-multiple-columns-in-r-dataframe/
+Acacia <- Acacia %>% separate("SURVEY.YEAR.SITE.BLOCK.TREATMENT.PLOT.ID.HEIGHT.AXIS1.AXIS2.CIRC.FLOWERS.BUDS.FRUITS.ANT",
+                              c("Survey", "Year", "Site", "Block", "Treatment", "Plot", "ID",
+                                "Height", "Axis1", "Axis2", "Circ", "Flowers", "Buds", "Fruit", "Ant"))
+glimpse(Acacia)
+colnames(Acacia) #looks good
+ncol(Acacia) #15, double checking
+nrow(Acacia) #157, right on
+Acacia[Acacia == ""] #28 missing data or NAs
+Acacia[Acacia == ""] <- NA
+Acacia
+class(Acacia)  #df, good to go
+
+#1.What type of variable is Fruits in this dataset? (10 pts)
+class("Fruit")
+# [1] "character"
+#double chec 
+is.numeric("Fruit") #[1] FALSE
+is.character("Fruit") #[1] TRUE
+
+#2. Remove all plants from block 1 that have a height greater than 2 (10 pts)
+class("Block") # [1]"character"
+Acacia$"Block" #lots of 2s and 3s need to go 
+unique(Acacia$Block)
+#use dplyr filter() function from dplyr module:
+Acacia%>%filter(Block == 1, Height < 2) #this is it!
+
+#3. Create a scatterplot of axis 1 and axis 2 with differing symbols depending
+#on the Plot variable (10 pts)
+library(ggplot2)
+
+#take a look at whats going in:
+Acacia$Plot #no NAs
+Acacia$Axis1 #has NAs
+Acacia$Axis2 #has NAs. Gonna need to exclude cause they make the plot look bad
+Acaciago <- drop_na(Acacia, Axis1, Axis2) #get rid of nas 
+is.numeric("Axis2") #F
+str(Acaciago) #cause they chr!
+#try this: oport$Importe <- as.numeric(as.character(oport$Importe)) it works!
+# I used https://stackoverflow.com/questions/76199931/converting-characters-to-numeric-in-r
+Acaciago$Axis1 <- as.numeric(as.character(Acaciago$Axis1))
+Acaciago$Axis2 <- as.numeric(as.character(Acaciago$Axis2))
+str(Acaciago) #they are numerics! 
+#use ggplot + geom_point
+Axisplot <- ggplot(Acaciago, aes(Axis1, Axis2)) +
+  geom_point((aes(shape=Plot, col=Plot))) +
+  scale_shape_manual(values = 1:9) +
+  xlab("Axis 1") + ylab ("Axis2") +
+  ggtitle("Acacia Plots")
+Axisplot #looks pretty good :)
+
+#knew how to plot with geom_point already, but had to google how to add extra 
+#shapes found https://hansjoerg.me/2019/02/15/plotting-many-groups-with-ggplot2/
+# to get scale_shape_manual() to assign more shapes
+
+#Part 2
+#4. The researcher has forgot to take the square root of one of the samples, 
+#find and correct this using r code. (10 pts)
+#load data:
+library(readxl)
+IntertidalAlg <- read_excel("IntertidalAlg.xlsx")
+glimpse(IntertidalAlg)
+#find which is the outlier
+IntertidalAlg$sqrtarea
+IntertidalAlg %>% slice_max(sqrtarea) #1 low    minus          1225
+sqrt(1225) #35 gotta make sure this is correct math
+#replace the 1225, use {} for function
+IntertidalAlg$sqrtarea[IntertidalAlg$sqrtarea == "1225"] <- {sqrt(1225)}
+view(IntertidalAlg) #it now has a 35 in row 9
+IntertidalAlg %>% slice_max(sqrtarea) #better
+#5. Create a graph which shows that all extreme outliers are corrected. (10 pts)
+#look for other outliers
+
+IntertidalAlg$herbivores #no outliers cause just "minus" and "plus"
+IntertidalAlg$height #just "mid" and "low"
+
+ggplot(IntertidalAlg) +
+  geom_point(aes(sqrtarea, herbivores,)) +
+  xlab("Area") + ylab("Herbivore Amount") +
+  ggtitle("Herbivores per Measured Area")
+#simple but shows that there isn't a huge discrepency 
+
+#6. Create a graph which the researcher might want to use in a publication. (10 pts)
+ggplot(IntertidalAlg) +
+  geom_point(aes(sqrtarea, height, colour = factor(herbivores), shape = factor(herbivores))) +
+  xlab("Area") + ylab("Vegetation Height") + ggtitle("Land Demographics")
+
+#Part 3
+#7. Using code, rearrange the dataset so that I have the following columns of data (10 pts): 
+#Neanderthal ln brain size 
+#Neanderthal ln brain mass
+#Recent ln brain size
+#Recent ln brain mass 
+
+Neanderthal <- read.csv("NeanderthalBrainSize.csv")
+glimpse(Neanderthal)
+class(Neanderthal) #df
+view(Neanderthal) #first row is descriptive...
+Neanderthal <- slice(Neanderthal, -1)
+Neanderthal #looks good now
+colnames(Neanderthal) #"lnmass"  "lnbrain" "species"
+Neanderthal$lnmass <- as.numeric(Neanderthal$lnmass)
+Neanderthal$lnbrain <- as.numeric(Neanderthal$lnbrain)
+str(Neanderthal) #looks good
+
+#use mutate() to make new columns. Had too look for how to deal with one case (spp)
+#that determined the output, found case_when()
+# this website taught me: https://dplyr.tidyverse.org/reference/case_when.html
+Neandies <- Neanderthal %>%
+  mutate(
+    lnmass_neanderthal = case_when(
+      species == "neanderthal" ~ lnmass,
+      TRUE ~ NA_real_
+    ),
+    lnbrain_neanderthal = case_when(
+      species == "neanderthal" ~ lnbrain,
+      TRUE ~ NA_real_
+    ),
+    lnmass = case_when(
+      species == "neanderthal" ~ NA_real_,
+      TRUE ~ lnmass
+    ),
+    lnbrain = case_when(
+      species == "neanderthal" ~ NA_real_,
+      TRUE ~ lnbrain
+    )
+  )
+
+view(Neandies)
+colnames(Neandies)
+Neandies$lnmass_neanderthal
+###this is it! 
+#8. Create a graph comparing all 4 columns created in question 7 (10 pts)
+#histogram with 4 will be good. Leanred histogram use in ggplot module.
+
+Neand1 <- ggplot(Neandies, aes(x=lnmass)) + geom_histogram(col = "yellow") + 
+  coord_cartesian(ylim = c(0, 5)) +
+  labs(x = "Recent Brain Mass")
+Neand2 <- ggplot(Neandies, aes(x = lnmass_neanderthal)) + geom_histogram(col = "green") +
+  coord_cartesian(ylim = c(0, 5)) +
+  labs(x="Neanderthal Brain Mass")
+Neand3 <- ggplot(Neandies, aes(x = lnbrain)) + geom_histogram(col = "yellow") +
+  coord_cartesian(ylim = c(0, 5)) +
+  labs(x="Recent Brain Size")
+Neand4 <- ggplot(Neandies, aes(x = lnbrain_neanderthal)) + geom_histogram(col="green") +
+  coord_cartesian(ylim = c(0, 5)) +
+  labs(x= "Neanderthal Brain Size")
+library(cowplot)
+plot_grid(Neand1, Neand2, Neand3, Neand4) #can add more 
+
+#Part 4
+#9. You have been asked to write a short report on summer fishing data for a 
+#fishery regulatory body. You are given the above two datasets on daily catch 
+#and escape rates across a number of years. Create a short report of any 
+#interesting findings using relevant graphs, data tables or statistical 
+#analyses. (20 pts) 
