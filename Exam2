@@ -32,3 +32,133 @@ possum <- possum%>%mutate(repoutput=ifelse(sex=="f", (totlngth/100)*(9/age), #if
 library(tibble)
 head(possum) #looka good
 view(possum)
+#3)
+#Create a graph showing residual reproductive success as a function of 
+#tail length with a separate line of best fit for each age.
+#need to get residuals 
+# source <- https://stats.stackexchange.com/questions/53254/how-to-find-residuals-and-plot-them
+
+#found NAs
+is.na(possum$taill) #none
+is.na(possum$repoutput) #2
+
+#clean up data so it fits like in 
+#https://stackoverflow.com/questions/38253295/aligning-data-frame-with-missing-values
+cleanpossum <- na.omit(possum)
+linear <- lm(repoutput ~ taill, data=cleanpossum)
+resids <- residuals(linear)
+nrow(cleanpossum) #101
+colnames(cleanpossum)
+length(linear$residuals) #101
+sum(is.na(linear$residuals)) #0
+view(cleanpossum)
+is.na(cleanpossum$repoutput) #0
+cleanpossum$resids <- resids
+colnames(cleanpossum)
+view(cleanpossum) #think this is it 
+
+ggplot(cleanpossum, aes(resids, taill, colour = as.factor(age))) +
+  geom_point() +
+  geom_smooth(method = lm, aes(group = age)) +
+  scale_color_brewer(palette = "RdYlBu") +
+  ggtitle("Possum Reproductive Success vs Tail Length") +
+  xlab("Residuals") + ylab("Tail Length") +
+  theme(plot.title = element_text(hjust=0.5)) + 
+  theme(panel.background= element_blank()) 
+#yes!
+
+#4) 
+#Write 3 custom functions
+
+flowers <- read.csv("flowers.csv")
+str(flowers)
+colnames(flowers) #"name","height..cm.","longevity..years.","place.of.origin",
+#"color","climate","cut.flowers","perfumes","medicine","average.number.of.petals"
+ncol(flowers)
+
+#used https://www.reddit.com/r/rstats/comments/n7a9nh/getting_the_value_from_one_column_in_data_frame/
+#function to show what dataclasses are shown
+dataclass <- function (flowers) {
+  for (i in 1:ncol(flowers)) {
+    cat(names(flowers)[i], "is a", class(flowers[, i]), "type", "\n")
+  }
+}
+dataclass(flowers)
+
+flowers$place.of.origin
+
+#function to show what climates are in each region
+climates <- function(place.of.origin) {  
+  climates <- flowers$climate[flowers$place.of.origin == place.of.origin] 
+  return(climates) 
+}
+climates("Asia")
+climates("Africa")
+climates("South America")
+
+#function to show heights in different regions
+heights <- function(place.of.origin) {
+  heights <- flowers$height..cm.[flowers$place.of.origin == place.of.origin]
+  return(heights)
+}
+heights("Asia")
+heights("Europe")
+
+#5)
+# create a histogram estimating the reproductive output of various Iberian 
+#lynx() populations
+#left off here: \]
+lynx
+A=10 		# no. of adults
+M=.87 	# mean fecundity for Iberian lynx
+nreps = 5000
+fec <- vector() #definied fec as a vector()
+fec # value is 8
+for(i in 1:nreps){
+  fec <- sum(rpois(A,M))  #rpois gives random deviates, took out fec[j]
+} #closed bracket
+#this is my edited 
+hist(fec/A, freq = F, breaks = seq(-.125,6.125,.25), # took out 1, capitalized A, added , between 6.125 and .25
+     density=20, #took out " for value
+     xlab="Offspring per adult",
+     main="Total offspring/no. adults") #changed ' to " in xlab and ylab, added 
+#comma after xlab
+#this looks right if fecundity is under 0 that total offspring shuold be under 1 but check anyway
+#sources ?hist and ?rpois
+
+
+#6) 
+#Describe a scenario in which using each of the following would be appropriate 
+#and write a short example code to support your explanation:
+
+#A while loop
+#these should be used to test if a condition is met. https://www.datamentor.io/r-programming/while-loop
+#got this code more or less from the loops module 
+readcharacter <- function(){
+  n <- readline(prompt="Enter a clade: ")
+}
+clades <- as.character(readcharacter())
+while (clades == "fishes") {   
+  print("Fishes are a false clade");
+  clades <- as.character(readcharacter());
+} 
+
+#Multiple conditional statements
+
+family <- data.frame(name=c('Jules', 'Ella', 'Juju'),
+                 species=c('human', 'human', 'feline'),
+                 age=c(32, 29, 9))
+
+#depending on spp, create a new column with voter status 
+family$voter <- ifelse(family$species=="human" | family$species=="feline", "voter", "can't read")
+family
+#family$voter <- ifelse(family$species == "human", "voter", "can't read") corrected version 
+df$rating <- ifelse(df$points>15 | df$assists>8, "good", "bad")
+df
+
+#A custom Function
+
+
+
+#Vectorization
+
