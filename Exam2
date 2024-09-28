@@ -175,9 +175,89 @@ view(flowers)
 flowers$morphs <- lengths(gregexpr(",",flowers$color)) +1 #need to do +1
 view(flowers) 
 
-#7
+#7 Create your own!
+#write a function that translates knots to miles per hour 
+#https://monashbioinformaticsplatform.github.io/2015-09-28-rbioinformatics-intro-r/02-func-R.html
+kts2mph <- function(knot) {
+  mph <- (knot) * 1.15078
+  return(mph)
+}
+kts2mph(2) #[1] 2.30156
+kts2mph(10) #[1] 11.5078 #looks good
+
 #8
-#9
+#replicate the figure 
+#sources: https://ggplot2.tidyverse.org/articles/ggplot2.html and tons of time messing around with it myself
+library(ggplot2)
+#green
+gylabs <- c("0", "200", "400", "600", "800", "1000")
+gxlabs <- c("-10", "0", "10", "20", "30")
+green <- data.frame(population=c(-1,2,4,6,8,10,12,14,16,18,20),
+                    freqs=c(1,10,50,210,610,1100,1300,1000,500,120,30))
+
+equalprob <- ggplot(green, aes(x=population, y=freqs)) + 
+  geom_bar(stat="summary", position="dodge", fill="green", color="black") + 
+ scale_x_continuous(limits = c(-10,30), breaks = c(-10, 0, 10, 20, 30), 
+                    labels = gxlabs) +
+  scale_y_continuous(limits =c(0,1400), breaks=c(0,200, 400, 600, 800, 1000), 
+                     labels = gylabs) +
+  coord_cartesian(xlim = c(-10, 30), ylim = c(0, 1500)) +
+  ylab(gylabs) + ylab("Frequency") + xlab("Log final poplation size at t=20") +
+  ggtitle("equal prob") + theme(plot.title = element_text(hjust=0.5)) +
+  theme(panel.background = element_blank())
+  
+equalprob #looks very close, need to do for the other colors 
+
+#red
+rylabs <- c("0", "200", "400", "600", "800", "1000")
+rxlabs <- c("-10", "0", "10", "20", "30")
+red <- data.frame(population=c(7,8,9,10,11,12,13,14,15,16,17,18),
+                    freqs=c(0,20,100,250,580,1020,1250,1000,590,180,30,0))
+red$color <- ifelse(red$population == 14, "red", "darkred") #add column to show just 14 as red
+litterbiased <- ggplot(red, aes(x=population, y=freqs)) + 
+  geom_bar(stat="summary", position="dodge", fill=red$color, color="black") + 
+  scale_x_continuous(limits = c(-10,30), breaks = c(-10, 0, 10, 20, 30), 
+                     labels = gxlabs) +
+  scale_y_continuous(limits =c(0,1400), breaks=c(0,200, 400, 600, 800, 1000), 
+                     labels = gylabs) +
+  coord_cartesian(xlim = c(-10, 30), ylim = c(0, 1500)) +
+  ylab(gylabs) + ylab("Frequency") + xlab("Log final poplation size at t=20") +
+  ggtitle("litter biased") + theme(plot.title = element_text(hjust=0.5)) +
+  theme(panel.background = element_blank())
+litterbiased
+
+#blue
+rylabs <- c("0", "200", "400", "600", "800", "1000")
+rxlabs <- c("-10", "0", "10", "20", "30")
+
+#brown
+
+
+#then need cowplot or something to put them together 
+
+  
+#9 Create a function that returns the probability of getting any number from the 
+#sum of 2 (Six-sided) dice rolls
+#following this tutorial: https://ditraglia.com/Econ103Public/Rtutorials/Rtutorial4.html
+results <- 1:6
+#dicerolls <- sample(results, size=2, replace=T )
+#sum(dicerolls)
+#sum(sample(results, size=2, replace=T ))#make it a single command:
+die <- function(){
+  dicerolls <- sample(results, size=2, replace=T )
+  return(sum(dicerolls))
+}
+games <- replicate(2, die()) #how do I get it to show me all the results? HATE THIS
+games
+table(games)/length(games) # think this makes sense but it is not what is wanted
+
+
+#10
+#make a pretty graph
+
+
+
+
 #10
 
 
