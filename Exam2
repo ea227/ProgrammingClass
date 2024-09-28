@@ -150,13 +150,35 @@ family <- data.frame(name=c('Jules', 'Ella', 'Juju'),
                  age=c(32, 29, 9))
 
 #depending on spp, create a new column with voter status 
-family$voter <- ifelse(family$species=="human" | family$species=="feline", "voter", "can't read")
+family$voter <- ifelse(family$species=="human", "voter", "can't read")
 family
-#family$voter <- ifelse(family$species == "human", "voter", "can't read") corrected version 
-df$rating <- ifelse(df$points>15 | df$assists>8, "good", "bad")
-df
+#do it again to make more columns 
+family$job <- ifelse(family$species=="human", "employed", "unemployed")
+family$diet <- ifelse(family$species=="human","omnivore", "carnivore")
 
 #A custom Function
+#Here i write a function to replace "voter" with "registered" since that is more explicit
+fixvoter <- function(family) {
+  family$voter <- gsub("voter", "registered", family$voter)
+  return(family)
+}
+fixvoter(family) #better!
+
+#Vectorization
+#this is good for simplifying the task. Instead of searching through the whole 
+#dataset, this tells the computer to just look at one column (a vector). Good 
+#for bigger datasets. Sources were module and
+#https://stackoverflow.com/questions/27599535/count-values-separated-by-a-comma-in-a-character-string
+
+view(flowers)
+#i want to know how many  colors each flower can have 
+flowers$morphs <- lengths(gregexpr(",",flowers$color)) +1 #need to do +1
+view(flowers) 
+
+#7
+#8
+#9
+#10
 
 
 
