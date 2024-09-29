@@ -9,8 +9,7 @@ library(cowplot)
 #4) are the functions too similar? 
 #5 - check and see if i am off
 #8) replicate the figure - what are the axis things called? 
-#9) get help 
-#)10 needs to be done 
+
 #knit it up 
 
 #1) Arrange the first 200 positive numbers divisible by 7 in a 20 X 10 matrix
@@ -281,115 +280,75 @@ plot_grid(equalprob, litterbiased, coverbiased, openbiased, ncol = 4)
 
 #9 Create a function that returns the probability of getting any number from the 
 #sum of 2 (Six-sided) dice rolls
-#following this tutorial: https://ditraglia.com/Econ103Public/Rtutorials/Rtutorial4.html
-results <- 1:6
-#dicerolls <- sample(results, size=2, replace=T )
-#sum(dicerolls)
-#sum(sample(results, size=2, replace=T ))#make it a single command:
-die <- function(){
-  dicerolls <- sample(results, size=2, replace=T )
-  return(sum(dicerolls))
-}
-games <- replicate(2, die()) #how do I get it to show me all the results? HATE THIS
-games
-table(games)/length(games) # think this makes sense but it is not what is wanted
-
+#computed the matrix like so: https://stackoverflow.com/questions/60384857/how-to-compute-the-matrix-of-the-sum-of-two-dice-rolls-in-r
 
 dice <- sapply(seq(6), "+", seq(6)) #gives matrix
 dicevec <- c(dice) #as vector
 dicetable <- table(dicevec) #now have a table w bottom row as freqs 
 dicedf <- as.data.frame(dicetable) #nicer
-str(dicedf) 
+str(dicedf)
+#need numerics:
 dicedf$dicevec <- as.numeric(as.character(dicedf$dicevec))
 dicedf$Freq <- as.numeric(dicedf$Freq)
 #now numeric
-heights <- function(place.of.origin) {
-  heights <- flowers$height..cm.[flowers$place.of.origin == place.of.origin]
-  return(heights)
-}
+# try and follow this one: heights <- function(place.of.origin) {
+  #heights <- flowers$height..cm.[flowers$place.of.origin == place.of.origin]
+  #return(heights)
+  #}
 
-diceprob <- function(dicedf) {  
-  diceprob <- dicedf$dicevec[dicedf[[Freq]] == Freq/36] 
-  return(diceprob) 
+rollfreq <- function(dicevec) {  
+  rollfreq <- dicedf$Freq[dicedf$dicevec == dicevec] 
+  return(rollfreq/36) 
 }
-diceprob(12) #this should work too but errors idk 
+#should be 1,2,3,4,5,6,5,4,3,2,1
+rollfreq(2) #0.02777778 is 1/36 good!
+rollfreq(3) #0.05555556 yes
+rollfreq(4) #yay
+rollfreq(5) #think this is it 
+rollfreq(6) #matching! 
+rollfreq(7) #hallelujah
+rollfreq(8) #point made 
+
+
 
 #10
 #make a pretty graph
+#I recycled SNP data from Wildlife Genomics on prairie dogs to make it about horses from Middle Earth 
 
-#DAPC for prairie dogs 
+library(readxl)
+eigenvecs <- read_xlsx("pca.eigenvec.xlsx")
 
+view(eigenvecs)
 
+eigenvecs$State
+unique(eigenvecs$State) # [1] "CO" "NM" "KS" "TX" "NE" "OK" "C0" "AZ" "CH" "SO"
+#groups (CO, C0, KS, NE, NM, OK, TX,) (AZ, SO) (CH) work from 
 
+eigenvecs <- eigenvecs %>% mutate(State = case_when(
+    State == "CO" ~ "Rohan",
+    State == "C0" ~ "Gondor",
+    State == "KS" ~ "Mordor",
+    State == "NE" ~ "Dead Marshes",
+    State == "NM" ~ "Ithilien",
+    State == "OK" ~ "Fangorn",
+    State == "TX" ~ "Dunland",
+    State == "AZ" ~ "Lorien",
+    State == "SO" ~ "Rivendell",
+    State == "CH" ~ "The Shire"))
+eigenvecs$State #now they have middle earth names 
 
+library(RColorBrewer)
+equines <- ggplot(eigenvecs, aes(x=PC1, y=PC2)) +
+  geom_point(aes(colour = State)) +
+  xlab("PC1") + ylab("PC2") + 
+  theme(panel.background= element_blank()) +
+  geom_jitter(aes(colour = State)) +
+  ggtitle("Equines of Middle Earth SNP Data") +
+  theme(plot.title = element_text(hjust=0.5)) + 
+  scale_color_brewer(palette = "Paired")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-###### junkyard
-#https://ditraglia.com/Econ103Public/Rtutorials/Rtutorial4.html
-dice.roll <- sample(1:6, size = 2, replace = TRUE)
-sum(dice.roll) #how to find the probability of each now? #STUCK!
-prob <-function(dice){
-  ((sum(dice.roll))/36) #?
-}
-prob(2)
-prob(3)
-prob(12) #nope this isn't it
-
+print(equines) 
 
 
-dicerolls #just gives a number 
-sum(dicerolls)
-#make it a sungle command:
-sum(sample(trythis, size=2, replace=T ))
-
-dice
-c(dice)
-dicetable <- table(dice)
-view(dicetable)
-
-probsum <- function(Freq){
-  prob <- dicetable$Freq[dicetable$dice == dice]
-  return(prob)
-}
-
-probsum(4) #no work 
-
-probsum <- function(dice) {
-  #pepe <- c(dice) #make it a matrix 
-  reps <- table(dice) #how many times each val is repeated
-  probsum <- reps/36
-  return(probsum)
-}
-probsum(3) #nope 
-probsum(4)
-#4 should be 0.111111
-
-
-#https://stackoverflow.com/questions/60384857/how-to-compute-the-matrix-of-the-sum-of-two-dice-rolls-in-r
-
-#dice <- sapply(seq(6), "+", seq(6)) gives matrix
-
-## computed the matrix like so: https://stackoverflow.com/questions/60384857/how-to-compute-the-matrix-of-the-sum-of-two-dice-rolls-in-r
-
-#########work on this one:    
-#dice <- sapply(seq(6), "+", seq(6))
 
 
