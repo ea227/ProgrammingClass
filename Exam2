@@ -1,6 +1,17 @@
 #Exam 2
 setwd("~/Desktop/Fall24/Programming for Biologists/Exam2")
 library(dplyr)
+library(tibble)
+library(ggplot2)
+library(cowplot)
+
+### ASK
+#4) are the functions too similar? 
+#5 - check and see if i am off
+#8) replicate the figure - what are the axis things called? 
+#9) get help 
+#)10 needs to be done 
+#knit it up 
 
 #1) Arrange the first 200 positive numbers divisible by 7 in a 20 X 10 matrix
 #using as few lines of code as possible. (Under 5 lines not counting comments 
@@ -21,17 +32,15 @@ colnames(possum) #[1] "case","site","Pop","sex","age","hdlngth" ,"skullw"
 #"totlngth","taill","footlgth","earconch","eye","chest","belly" gotta use these
 
 # want mutate() for conditional column building and ifelse() 
-#(ifselse can test if it is t or f)
-
+#(ifselse can test if it is t or f,
+#https://www.learnbyexample.org/r-if-else-elseif-statement/)
 #https://www.geeksforgeeks.org/how-to-do-conditional-mutate-in-r/ <- source
-#my_data <- my_data %>%mutate(New_Education = ifelse(is.na(Age), "Age Missing", 
-                    #ifelse(Age <= 18, "High School", "College or Higher")))
 possum <- possum%>%mutate(repoutput=ifelse(sex=="f", (totlngth/100)*(9/age), #if not f it sends to this:
                                            (belly/chest)*((age+10)/age^2))) 
 #workswithout second ifelse() because it is binary
-library(tibble)
 head(possum) #looka good
 view(possum)
+
 #3)
 #Create a graph showing residual reproductive success as a function of 
 #tail length with a separate line of best fit for each age.
@@ -72,9 +81,7 @@ ggplot(cleanpossum, aes(resids, taill, colour = as.factor(age))) +
 
 flowers <- read.csv("flowers.csv")
 str(flowers)
-colnames(flowers) #"name","height..cm.","longevity..years.","place.of.origin",
-#"color","climate","cut.flowers","perfumes","medicine","average.number.of.petals"
-ncol(flowers)
+
 
 #used https://www.reddit.com/r/rstats/comments/n7a9nh/getting_the_value_from_one_column_in_data_frame/
 #function to show what dataclasses are shown
@@ -85,16 +92,16 @@ dataclass <- function (flowers) {
 }
 dataclass(flowers)
 
-flowers$place.of.origin
 
 #function to show what climates are in each region
 climates <- function(place.of.origin) {  
   climates <- flowers$climate[flowers$place.of.origin == place.of.origin] 
   return(climates) 
 }
+#test it out:
 climates("Asia")
 climates("Africa")
-climates("South America")
+climates("South America") #bingo bango
 
 #function to show heights in different regions
 heights <- function(place.of.origin) {
@@ -108,7 +115,7 @@ heights("Europe")
 # create a histogram estimating the reproductive output of various Iberian 
 #lynx() populations
 #left off here: \]
-lynx
+lynx #idk how to loop this in?
 A=10 		# no. of adults
 M=.87 	# mean fecundity for Iberian lynx
 nreps = 5000
@@ -141,14 +148,15 @@ clades <- as.character(readcharacter())
 while (clades == "fishes") {   
   print("Fishes are a false clade");
   clades <- as.character(readcharacter());
-} 
+}
+
 
 #Multiple conditional statements
+#these can be used to make new columns, like with ifelse() that checks t or F and assigns th evalue based on that
 
 family <- data.frame(name=c('Jules', 'Ella', 'Juju'),
                  species=c('human', 'human', 'feline'),
                  age=c(32, 29, 9))
-
 #depending on spp, create a new column with voter status 
 family$voter <- ifelse(family$species=="human", "voter", "can't read")
 family
@@ -188,12 +196,13 @@ kts2mph(10) #[1] 11.5078 #looks good
 #8
 #replicate the figure 
 #sources: https://ggplot2.tidyverse.org/articles/ggplot2.html and tons of time messing around with it myself
+#https://bookdown.org/hneth/ds4psy/D-3-apx-colors-basics.html
 library(ggplot2)
 #green
 gylabs <- c("0", "200", "400", "600", "800", "1000")
 gxlabs <- c("-10", "0", "10", "20", "30")
 green <- data.frame(population=c(-1,2,4,6,8,10,12,14,16,18,20),
-                    freqs=c(1,10,50,210,610,1100,1300,1000,500,120,30))
+                    freqs=c(0,10,50,210,610,1100,1300,1000,500,120,30))
 
 equalprob <- ggplot(green, aes(x=population, y=freqs)) + 
   geom_bar(stat="summary", position="dodge", fill="green", color="black") + 
@@ -217,25 +226,59 @@ red$color <- ifelse(red$population == 14, "red", "darkred") #add column to show 
 litterbiased <- ggplot(red, aes(x=population, y=freqs)) + 
   geom_bar(stat="summary", position="dodge", fill=red$color, color="black") + 
   scale_x_continuous(limits = c(-10,30), breaks = c(-10, 0, 10, 20, 30), 
-                     labels = gxlabs) +
+                     labels = rxlabs) +
   scale_y_continuous(limits =c(0,1400), breaks=c(0,200, 400, 600, 800, 1000), 
-                     labels = gylabs) +
+                     labels = rylabs) +
   coord_cartesian(xlim = c(-10, 30), ylim = c(0, 1500)) +
-  ylab(gylabs) + ylab("Frequency") + xlab("Log final poplation size at t=20") +
+  ylab(rylabs) + ylab("Frequency") + xlab("Log final poplation size at t=20") +
   ggtitle("litter biased") + theme(plot.title = element_text(hjust=0.5)) +
   theme(panel.background = element_blank())
 litterbiased
 
 #blue
-rylabs <- c("0", "200", "400", "600", "800", "1000")
-rxlabs <- c("-10", "0", "10", "20", "30")
+bylabs <- c("0", "200", "400", "600")
+bxlabs <- c("-10", "0", "10", "20", "30")
+blue <- data.frame(population=c(-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3),
+                   freqs=c(0,25,300,410,625,770,800,700,510,380,250,115,35,26,10,1))
+blue$color <- ifelse(blue$population == -10, "blue", "darkblue")
+coverbiased <- ggplot(blue, aes(x=population, y=freqs)) + 
+  geom_bar(stat="summary", position="dodge", fill=blue$color, color="black") + 
+  scale_x_continuous(limits = c(-20,30), breaks = c(-10, 0, 10, 20, 30), 
+                     labels = bxlabs) +
+  scale_y_continuous(limits =c(0,1000), breaks=c(0,200, 400, 600), 
+                     labels = bylabs) +
+  coord_cartesian(xlim = c(-10, 30), ylim = c(0, 1500)) +
+  ylab(bylabs) + ylab("Frequency") + xlab("Log final poplation size at t=20") +
+  ggtitle("cover biased") + theme(plot.title = element_text(hjust=0.5)) +
+  theme(panel.background = element_blank())
+coverbiased
 
-#brown
+
+#10,1 dodgerblue
+oylabs <- c("0", "200", "400", "600", "800", "1000")
+oxlabs <- c("-10", "0", "10", "20", "30")
+orange <- data.frame(population=c(17,18,19,20,21,22,23,24,25,26,27,28,29,30),
+                    freqs=c(0,5,25,50,270,325,575,820,1050,900,625,350,100,0))
+orange$color <- ifelse(orange$population == 29, "darkorange", "orange3")
+openbiased <- ggplot(orange, aes(x=population, y=freqs)) + 
+  geom_bar(stat="summary", position="dodge", fill=orange$color, color="black") + 
+  scale_x_continuous(limits = c(-10,30), breaks = c(-10, 0, 10, 20, 30), 
+                     labels = oxlabs) +
+  scale_y_continuous(limits =c(0,1400), breaks=c(0,200, 400, 600, 800, 1000), 
+                     labels = oylabs) +
+  coord_cartesian(xlim = c(-10, 30), ylim = c(0, 1500)) +
+  ylab(oylabs) + ylab("Frequency") + xlab("Log final poplation size at t=20") +
+  ggtitle("open biased") + theme(plot.title = element_text(hjust=0.5)) +
+  theme(panel.background = element_blank())
+openbiased
 
 
 #then need cowplot or something to put them together 
-
+#equalprob, litterbiased, coverbiased, openbiased
+library(cowplot)
+plot_grid(equalprob, litterbiased, coverbiased, openbiased, ncol = 4)
   
+
 #9 Create a function that returns the probability of getting any number from the 
 #sum of 2 (Six-sided) dice rolls
 #following this tutorial: https://ditraglia.com/Econ103Public/Rtutorials/Rtutorial4.html
@@ -252,15 +295,101 @@ games
 table(games)/length(games) # think this makes sense but it is not what is wanted
 
 
+dice <- sapply(seq(6), "+", seq(6)) #gives matrix
+dicevec <- c(dice) #as vector
+dicetable <- table(dicevec) #now have a table w bottom row as freqs 
+dicedf <- as.data.frame(dicetable) #nicer
+str(dicedf) 
+dicedf$dicevec <- as.numeric(as.character(dicedf$dicevec))
+dicedf$Freq <- as.numeric(dicedf$Freq)
+#now numeric
+heights <- function(place.of.origin) {
+  heights <- flowers$height..cm.[flowers$place.of.origin == place.of.origin]
+  return(heights)
+}
+
+diceprob <- function(dicedf) {  
+  diceprob <- dicedf$dicevec[dicedf[[Freq]] == Freq/36] 
+  return(diceprob) 
+}
+diceprob(12) #this should work too but errors idk 
+
 #10
 #make a pretty graph
 
+#DAPC for prairie dogs 
 
 
 
-#10
 
 
 
-#Vectorization
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###### junkyard
+#https://ditraglia.com/Econ103Public/Rtutorials/Rtutorial4.html
+dice.roll <- sample(1:6, size = 2, replace = TRUE)
+sum(dice.roll) #how to find the probability of each now? #STUCK!
+prob <-function(dice){
+  ((sum(dice.roll))/36) #?
+}
+prob(2)
+prob(3)
+prob(12) #nope this isn't it
+
+
+
+dicerolls #just gives a number 
+sum(dicerolls)
+#make it a sungle command:
+sum(sample(trythis, size=2, replace=T ))
+
+dice
+c(dice)
+dicetable <- table(dice)
+view(dicetable)
+
+probsum <- function(Freq){
+  prob <- dicetable$Freq[dicetable$dice == dice]
+  return(prob)
+}
+
+probsum(4) #no work 
+
+probsum <- function(dice) {
+  #pepe <- c(dice) #make it a matrix 
+  reps <- table(dice) #how many times each val is repeated
+  probsum <- reps/36
+  return(probsum)
+}
+probsum(3) #nope 
+probsum(4)
+#4 should be 0.111111
+
+
+#https://stackoverflow.com/questions/60384857/how-to-compute-the-matrix-of-the-sum-of-two-dice-rolls-in-r
+
+#dice <- sapply(seq(6), "+", seq(6)) gives matrix
+
+## computed the matrix like so: https://stackoverflow.com/questions/60384857/how-to-compute-the-matrix-of-the-sum-of-two-dice-rolls-in-r
+
+#########work on this one:    
+#dice <- sapply(seq(6), "+", seq(6))
+
 
