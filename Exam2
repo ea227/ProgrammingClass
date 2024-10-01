@@ -1,16 +1,12 @@
-#Exam 2
+
+#**Exam 2 Ella Adams-Herrmann**
 setwd("~/Desktop/Fall24/Programming for Biologists/Exam2")
 library(dplyr)
 library(tibble)
 library(ggplot2)
 library(cowplot)
 
-### ASK
-#4) are the functions too similar? 
-#5 - check and see if i am off
-#8) replicate the figure - what are the axis things called? 
 
-#knit it up 
 
 #1) Arrange the first 200 positive numbers divisible by 7 in a 20 X 10 matrix
 #using as few lines of code as possible. (Under 5 lines not counting comments 
@@ -30,28 +26,28 @@ ncol(possum) #14
 colnames(possum) #[1] "case","site","Pop","sex","age","hdlngth" ,"skullw"  
 #"totlngth","taill","footlgth","earconch","eye","chest","belly" gotta use these
 
-# want mutate() for conditional column building and ifelse() 
-#(ifselse can test if it is t or f,
-#https://www.learnbyexample.org/r-if-else-elseif-statement/)
-#https://www.geeksforgeeks.org/how-to-do-conditional-mutate-in-r/ <- source
+## want mutate() for conditional column building and ifelse() 
+##(ifselse can test if it is t or f,
+##https://www.learnbyexample.org/r-if-else-elseif-statement/)
+##https://www.geeksforgeeks.org/how-to-do-conditional-mutate-in-r/ <- source
 possum <- possum%>%mutate(repoutput=ifelse(sex=="f", (totlngth/100)*(9/age), #if not f it sends to this:
                                            (belly/chest)*((age+10)/age^2))) 
-#workswithout second ifelse() because it is binary
+##workswithout second ifelse() because it is binary
 head(possum) #looka good
 view(possum)
 
 #3)
 #Create a graph showing residual reproductive success as a function of 
 #tail length with a separate line of best fit for each age.
-#need to get residuals 
-# source <- https://stats.stackexchange.com/questions/53254/how-to-find-residuals-and-plot-them
+##need to get residuals 
+## source <- https://stats.stackexchange.com/questions/53254/how-to-find-residuals-and-plot-them
 
-#found NAs
+##found NAs
 is.na(possum$taill) #none
 is.na(possum$repoutput) #2
 
-#clean up data so it fits like in 
-#https://stackoverflow.com/questions/38253295/aligning-data-frame-with-missing-values
+##clean up data so it fits like in 
+##https://stackoverflow.com/questions/38253295/aligning-data-frame-with-missing-values
 cleanpossum <- na.omit(possum)
 linear <- lm(repoutput ~ taill, data=cleanpossum)
 resids <- residuals(linear)
@@ -73,17 +69,17 @@ ggplot(cleanpossum, aes(resids, taill, colour = as.factor(age))) +
   xlab("Residuals") + ylab("Tail Length") +
   theme(plot.title = element_text(hjust=0.5)) + 
   theme(panel.background= element_blank()) 
-#yes!
+##yes!
 
 #4) 
 #Write 3 custom functions
 
 flowers <- read.csv("flowers.csv")
 str(flowers)
+view(flowers)
 
-
-#used https://www.reddit.com/r/rstats/comments/n7a9nh/getting_the_value_from_one_column_in_data_frame/
-#function to show what dataclasses are shown
+##used https://www.reddit.com/r/rstats/comments/n7a9nh/getting_the_value_from_one_column_in_data_frame/
+##function to show what dataclasses are shown
 dataclass <- function (flowers) {
   for (i in 1:ncol(flowers)) {
     cat(names(flowers)[i], "is a", class(flowers[, i]), "type", "\n")
@@ -92,17 +88,30 @@ dataclass <- function (flowers) {
 dataclass(flowers)
 
 
-#function to show what climates are in each region
+##function to show what climates are in each region
 climates <- function(place.of.origin) {  
   climates <- flowers$climate[flowers$place.of.origin == place.of.origin] 
   return(climates) 
 }
-#test it out:
+##test it out:
 climates("Asia")
 climates("Africa")
 climates("South America") #bingo bango
 
-#function to show heights in different regions
+##function that returns TRUE if Iris is a name
+##https://stackoverflow.com/questions/30550289/trouble-getting-function-to-return-true
+
+pinkflowers <- function(name) {
+  for(i in 1:length(flowers$name)) {
+    if((flowers$name == "Iris")[i]) {
+      return(TRUE)
+    }
+  }
+}
+pinkflowers(flowers$name)
+
+
+##function to show heights in different regions
 heights <- function(place.of.origin) {
   heights <- flowers$height..cm.[flowers$place.of.origin == place.of.origin]
   return(heights)
@@ -113,31 +122,29 @@ heights("Europe")
 #5)
 # create a histogram estimating the reproductive output of various Iberian 
 #lynx() populations
-#left off here: \]
-lynx #idk how to loop this in?
+
 A=10 		# no. of adults
 M=.87 	# mean fecundity for Iberian lynx
 nreps = 5000
-fec <- vector() #definied fec as a vector()
+fec <- vector()#definied fec as a vector()
 fec # value is 8
 for(i in 1:nreps){
-  fec <- sum(rpois(A,M))  #rpois gives random deviates, took out fec[j]
+  fec[i] <- sum(rpois(A,M))  #rpois gives random deviates
 } #closed bracket
-#this is my edited 
 hist(fec/A, freq = F, breaks = seq(-.125,6.125,.25), # took out 1, capitalized A, added , between 6.125 and .25
      density=20, #took out " for value
      xlab="Offspring per adult",
      main="Total offspring/no. adults") #changed ' to " in xlab and ylab, added 
 #comma after xlab
-#this looks right if fecundity is under 0 that total offspring shuold be under 1 but check anyway
-#sources ?hist and ?rpois
+##this looks right if fecundity is under 0 that total offspring shuold be under 1 but check anyway
+##sources ?hist and ?rpois
 
 
 #6) 
 #Describe a scenario in which using each of the following would be appropriate 
 #and write a short example code to support your explanation:
 
-#A while loop
+##A while loop
 #these should be used to test if a condition is met. https://www.datamentor.io/r-programming/while-loop
 #got this code more or less from the loops module 
 readcharacter <- function(){
@@ -150,32 +157,32 @@ while (clades == "fishes") {
 }
 
 
-#Multiple conditional statements
-#these can be used to make new columns, like with ifelse() that checks t or F and assigns th evalue based on that
+##Multiple conditional statements
+##these can be used to make new columns, like with ifelse() that checks t or F and assigns th evalue based on that
 
 family <- data.frame(name=c('Jules', 'Ella', 'Juju'),
                  species=c('human', 'human', 'feline'),
                  age=c(32, 29, 9))
-#depending on spp, create a new column with voter status 
+##depending on spp, create a new column with voter status 
 family$voter <- ifelse(family$species=="human", "voter", "can't read")
 family
-#do it again to make more columns 
+##do it again to make more columns 
 family$job <- ifelse(family$species=="human", "employed", "unemployed")
 family$diet <- ifelse(family$species=="human","omnivore", "carnivore")
 
-#A custom Function
-#Here i write a function to replace "voter" with "registered" since that is more explicit
+##A custom Function
+##Here i write a function to replace "voter" with "registered" since that is more explicit
 fixvoter <- function(family) {
   family$voter <- gsub("voter", "registered", family$voter)
   return(family)
 }
 fixvoter(family) #better!
 
-#Vectorization
-#this is good for simplifying the task. Instead of searching through the whole 
-#dataset, this tells the computer to just look at one column (a vector). Good 
-#for bigger datasets. Sources were module and
-#https://stackoverflow.com/questions/27599535/count-values-separated-by-a-comma-in-a-character-string
+##Vectorization
+##this is good for simplifying the task. Instead of searching through the whole 
+##dataset, this tells the computer to just look at one column (a vector). Good 
+##for bigger datasets. Sources were module and
+##https://stackoverflow.com/questions/27599535/count-values-separated-by-a-comma-in-a-character-string
 
 view(flowers)
 #i want to know how many  colors each flower can have 
@@ -184,7 +191,7 @@ view(flowers)
 
 #7 Create your own!
 #write a function that translates knots to miles per hour 
-#https://monashbioinformaticsplatform.github.io/2015-09-28-rbioinformatics-intro-r/02-func-R.html
+##https://monashbioinformaticsplatform.github.io/2015-09-28-rbioinformatics-intro-r/02-func-R.html
 kts2mph <- function(knot) {
   mph <- (knot) * 1.15078
   return(mph)
@@ -194,8 +201,8 @@ kts2mph(10) #[1] 11.5078 #looks good
 
 #8
 #replicate the figure 
-#sources: https://ggplot2.tidyverse.org/articles/ggplot2.html and tons of time messing around with it myself
-#https://bookdown.org/hneth/ds4psy/D-3-apx-colors-basics.html
+##sources: https://ggplot2.tidyverse.org/articles/ggplot2.html and tons of time messing around with it myself
+##https://bookdown.org/hneth/ds4psy/D-3-apx-colors-basics.html
 library(ggplot2)
 #green
 gylabs <- c("0", "200", "400", "600", "800", "1000")
@@ -253,7 +260,7 @@ coverbiased <- ggplot(blue, aes(x=population, y=freqs)) +
 coverbiased
 
 
-#10,1 dodgerblue
+
 oylabs <- c("0", "200", "400", "600", "800", "1000")
 oxlabs <- c("-10", "0", "10", "20", "30")
 orange <- data.frame(population=c(17,18,19,20,21,22,23,24,25,26,27,28,29,30),
@@ -272,35 +279,35 @@ openbiased <- ggplot(orange, aes(x=population, y=freqs)) +
 openbiased
 
 
-#then need cowplot or something to put them together 
-#equalprob, litterbiased, coverbiased, openbiased
+##then need cowplot or something to put them together 
+##equalprob, litterbiased, coverbiased, openbiased
 library(cowplot)
 plot_grid(equalprob, litterbiased, coverbiased, openbiased, ncol = 4)
   
 
 #9 Create a function that returns the probability of getting any number from the 
 #sum of 2 (Six-sided) dice rolls
-#computed the matrix like so: https://stackoverflow.com/questions/60384857/how-to-compute-the-matrix-of-the-sum-of-two-dice-rolls-in-r
+##computed the matrix like so: https://stackoverflow.com/questions/60384857/how-to-compute-the-matrix-of-the-sum-of-two-dice-rolls-in-r
 
 dice <- sapply(seq(6), "+", seq(6)) #gives matrix
 dicevec <- c(dice) #as vector
 dicetable <- table(dicevec) #now have a table w bottom row as freqs 
 dicedf <- as.data.frame(dicetable) #nicer
 str(dicedf)
-#need numerics:
+##need numerics:
 dicedf$dicevec <- as.numeric(as.character(dicedf$dicevec))
 dicedf$Freq <- as.numeric(dicedf$Freq)
-#now numeric
-# try and follow this one: heights <- function(place.of.origin) {
-  #heights <- flowers$height..cm.[flowers$place.of.origin == place.of.origin]
-  #return(heights)
-  #}
+##now numeric
+## try and follow this one: heights <- function(place.of.origin) {
+  ##heights <- flowers$height..cm.[flowers$place.of.origin == place.of.origin]
+  ##return(heights)
+  ##}
 
 rollfreq <- function(dicevec) {  
   rollfreq <- dicedf$Freq[dicedf$dicevec == dicevec] 
   return(rollfreq/36) 
 }
-#should be 1,2,3,4,5,6,5,4,3,2,1
+##should be 1,2,3,4,5,6,5,4,3,2,1
 rollfreq(2) #0.02777778 is 1/36 good!
 rollfreq(3) #0.05555556 yes
 rollfreq(4) #yay
@@ -313,7 +320,7 @@ rollfreq(8) #point made
 
 #10
 #make a pretty graph
-#I recycled SNP data from Wildlife Genomics on prairie dogs to make it about horses from Middle Earth 
+##I recycled SNP data from Wildlife Genomics on prairie dogs to make it about horses from Middle Earth 
 
 library(readxl)
 eigenvecs <- read_xlsx("pca.eigenvec.xlsx")
@@ -322,7 +329,6 @@ view(eigenvecs)
 
 eigenvecs$State
 unique(eigenvecs$State) # [1] "CO" "NM" "KS" "TX" "NE" "OK" "C0" "AZ" "CH" "SO"
-#groups (CO, C0, KS, NE, NM, OK, TX,) (AZ, SO) (CH) work from 
 
 eigenvecs <- eigenvecs %>% mutate(State = case_when(
     State == "CO" ~ "Rohan",
@@ -339,10 +345,11 @@ eigenvecs$State #now they have middle earth names
 
 library(RColorBrewer)
 equines <- ggplot(eigenvecs, aes(x=PC1, y=PC2)) +
-  geom_point(aes(colour = State)) +
+  geom_point(aes(colour = State, shape = State)) +
   xlab("PC1") + ylab("PC2") + 
   theme(panel.background= element_blank()) +
-  geom_jitter(aes(colour = State)) +
+  geom_jitter(aes(colour = State, shape = State)) +
+  scale_shape_manual(values = 1:10) +
   ggtitle("Equines of Middle Earth SNP Data") +
   theme(plot.title = element_text(hjust=0.5)) + 
   scale_color_brewer(palette = "Paired")
