@@ -1,0 +1,186 @@
+#Exam 3
+setwd("~/Desktop/Fall24/Programming for Biologists/exam3")
+#Part 1: Adagenet 
+library (adegenet)
+library(ape)
+library(tidyverse)
+library(chron)
+library(betareg)
+#1. Describe the package Adegenet 
+##paste in from word doc at end
+
+#2. Use 3 functions from Adegenet 
+#get seqs
+seqs <- c("OR480414.1", "OR480413.1", "OR480412.1", "OR480114.1",
+                     "OR480112.1", "OR480110.1", "OR480134.1")
+sardines <- read.GenBank(seqs)
+
+#first function: find mutations: 
+findMutations(sardines)
+
+Sardines <- DNAbin2genind(sardines)
+class(Sardines)
+#second function:
+#compute minor allele frequency: 
+minorAllele(Sardines)
+
+
+#third functions:
+#create matrix of spp names 
+pops <- attr(sardines, "species")
+
+#just a cool one
+showmekittens(x = NULL, list = FALSE)
+
+#3 Create a working custom function, loop or conditional that contains at least one function from the package 
+
+data("nancycats")
+nancycats
+alleles <- nancycats$loc.n.all
+names <- nancycats$all.names
+for (x in seq(alleles)){
+  if (alleles[x] > 10) {
+    cat("locus", names(alleles)[x], "greater than 10 alleles\n")
+    print(names[[x]])
+  }
+}
+
+#Part 2: Dryad Database 
+#Oto, Yumeki; Kuroki, Mari; Iida, Midori et al. (2023).  A key evolutionary step
+#determining osmoregulatory ability for freshwater colonisation in early life 
+#stages of fish [Dataset]. Dryad. https://doi.org/10.5061/dryad.tb2rbp03x
+
+#4. Using the dataset chosen, formulate a hypothesis/question
+#Aquaporin3 (aqp3) will show different levels of expression in saltwater and 
+  #freshwater popualtions 
+
+#5. Test the hypothesis using an appropriate statistical analysis 
+library(readxl)
+expression <- read_excel("Data_for_detailed_expression_analysis.xlsx")
+View(expression)
+#find test to see if expression levels differ between populations 
+res_aov <- aov(aqp3 ~ Population, data = dat)
+dat <- expression %>%
+  select(Population, aqp3)
+View(dat)
+res_aov <- aov(aqp3 ~ Population, data = dat)
+summary(res_aov)
+
+
+#6. Create at least one publication quality figure of your results and write a short conclusion section
+ggplot(dat) +
+  aes(x = Population, y = aqp3, color = Population) +
+  geom_jitter() + 
+  theme(panel.background= element_blank()) +
+  theme(legend.position = "none")
+
+#The populations measured do not show significant difference (p value 0.204), 
+#indicating that aquaporin3 is not expressed differently between these saltwater 
+#and freshwater populations of fishes.
+
+#Part 3
+#7.Write a short 1-2 page literature review on how r is used in your area of research
+
+
+#Part 4
+#Test the following hypotheses using appropriate methods: 
+
+#8. Hypothesis: Survival is best predicted by the interaction between population 
+#and larval activity 
+survivaldata <- read_csv("growthandactivity.csv")
+nrow(survivaldata)
+as.tibble(survivaldata)
+View(survivaldata) #has 1s
+survival <- survivaldata %>%  
+  filter(Survival <= 1) 
+survival$Survival #no more >1 
+#model <- glm(cbind(proportional response) ~ var1 * var2, data = data, family = binomial) 
+survival$Lives <- round(survival$Survival * survival$Clutch, 0) 
+survival$Dies <- survival$Clutch - survival$Lives
+survivalmodle <- glm(cbind(Lives, Dies) ~ Population * Activity,
+                     data=survival,
+                     family = binomial)
+summary(survivalmodle)
+survival$Predicted_Survival <- predict(survivalmodle, type = "response")
+
+viewsurvival <- ggplot(survival) +
+  aes(survival$Activity, survival$Predicted_Survival, colour = as.factor(survival$Population)) +
+  geom_point() +
+  theme(panel.background= element_blank()) +
+  labs(
+    x = "Activity",
+    y = "Prob Survival",
+    title = "Predicted Survival vs Activity", 
+    color = "Population"
+  )
+print(viewsurvival)
+#Answer: the beta regression showed that interaction between population and 
+#larval activity was not significantly correlated to survival. P values were all
+#1. The visualization of the data did not show a defined trend either.  
+
+
+#9: Hypothesis: The number of observed Adele Penguin arrivals is declining over
+#time but is declining the fastest in colony 2.1 GLM
+adelies <- read_csv("adelie.csv")
+library(lme4) #fit linear mixed-effect model
+adelies <- penguins
+View(adelies)
+adelies$Date <- as.Date(adelies$Date)  # now real Date format 
+adelies$Year <- format(adelies$Date, "%Y")  # now has a year column
+adelies <- na.omit(adelies)
+str(adelies$Colony) 
+adeliesmodel <- lmer(Adults ~ Year * (as.numeric(Colony) == 2.1) + (1 | Colony), data = adelies)
+summary(adeliesmodel)
+
+
+time_trned <- ggplot(adelies) +
+  aes(x = as.numeric(Year), y = Adults, color = as.factor(Colony)) +
+  geom_point() +
+  geom_smooth() +
+  scale_colour_viridis_d(name = "Colony") +
+  labs(title = "Adelie Penguin Arrivals",
+       x = "Year", y = "Adults Counted") +
+  theme_bw()
+print(time_trned)
+
+time_trend2 <- ggplot(adelies) +
+  aes(x = as.numeric(Year), y = Adults) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, aes(color = Colony == 2.1)) +
+  scale_color_manual(
+    name = "Colonies",  # Set legend title
+    values = c("black", "red"),
+    labels = c("Total", "Colony 2.1")) +
+  labs(title = "Decline in penguin arrivals",
+       x = "Year", 
+       y = "Adults Observed") + 
+  theme_bw()
+print(time_trend2)
+#Answer: There is an overall decline in all penguin colonies, with the final year estimate at -156.441. 
+#There was also a greater variability between colonies (std. dev 69.60) than within colonies (st dev 48.85).
+#Colony 2.1 began with higher population estimates, but experienced a sharper overall decrease than the 
+#total colony numbers, supported by significant |t| values. Graphs visualize these trends. 
+
+
+
+#10.  All pairwise comparisons of species have a significantly different DBH
+
+alder <- read_csv("alder.csv")
+head(alder) #`DBH(cm)`
+
+#try anova 
+# Fit the model using the aov() function this should be god 
+#model_aov <- aov(weight ~ exercise * age * height * bmi * gender, data = data)
+alder_aov <- aov(`DBH(cm)` ~ Species, data = alder)
+summary(alder_aov) #significant 
+turkeytest <- TukeyHSD(alder_aov)
+print(turkeytest) #rose-alder, willow-alder, rose-poplar, willip-poplar, spruce-rose, and willow-spruce 
+
+#the anova tested for differences between pairs, the tukey test showed what was significant. 
+#Not all pairs had significanlty different DBH, but rose-alder, willow-alder, 
+#rose-poplar, will0w-poplar, spruce-rose, and willow-spruce had significant p values. 
+
+#11 ugly graph
+
+
+
